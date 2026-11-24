@@ -1,27 +1,49 @@
 #!/usr/bin/env python3
-"""Make the AI Judge Laugh: Developer Excuse — make.fun entry.
+"""Developer-excuse entry for 'Make the AI Judge Laugh' on make.fun.
 
-Writes one funny single-line excuse a developer gives when code
-breaks in production, to $MAKEFUN_OUTPUT_DIR/entry.txt
-(default /output/entry.txt).
+Stores one funny excuse a developer might give when production
+breaks, in ``entry.txt`` inside the folder pointed to by the
+MAKEFUN_OUTPUT_DIR environment variable (or /output by default).
 
-Deterministic: Python 3 stdlib only, no network, no randomness.
+Standard library only; no network calls and no randomness, so the
+generated file is the same on every run.
 """
 
 import os
+from pathlib import Path
 
-LINE = (
+# The excuse, split across two source lines for readability. The
+# concatenated text is the complete 95-character entry.
+EXCUSE = (
     "Production was already broken — the deploy just turned the "
     "lights on in front of the customers."
 )
 
+FILE_NAME = "entry.txt"
+DEFAULT_DIR = "/output"
+
+
+def excuse_text() -> str:
+    """Return the developer excuse that forms this entry."""
+    return EXCUSE
+
+
+def destination_dir() -> Path:
+    """Figure out which directory should receive the entry file."""
+    return Path(os.environ.get("MAKEFUN_OUTPUT_DIR", DEFAULT_DIR))
+
+
+def save_entry() -> Path:
+    """Write the excuse to entry.txt, creating folders as needed."""
+    folder = destination_dir()
+    folder.mkdir(parents=True, exist_ok=True)
+    out_file = folder / FILE_NAME
+    out_file.write_text(excuse_text(), encoding="utf-8")
+    return out_file
+
 
 def main() -> int:
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
-    os.makedirs(out_dir, exist_ok=True)
-    path = os.path.join(out_dir, "entry.txt")
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(LINE)
+    save_entry()
     return 0
 
 
